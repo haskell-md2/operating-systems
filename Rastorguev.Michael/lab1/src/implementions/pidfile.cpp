@@ -18,6 +18,17 @@ pid_t PidFile::read_pid() const {
     return pid;
 }
 
+//Правки к замечанию 2
+std::string read_comm(const std::string& who) {
+
+    std::ifstream f("/proc/" + who + "/comm");
+    std::string name;
+    std::getline(f, name);
+    
+    return name;
+}
+
+
 bool PidFile::is_process_running(pid_t pid) {
 
     std::ifstream stat("/proc/" + std::to_string(pid) + "/stat");
@@ -33,14 +44,12 @@ bool PidFile::is_process_running(pid_t pid) {
 
 bool PidFile::is_same_program(pid_t pid) {
 
-    std::error_code e1, e2;
-    auto other = std::filesystem::read_symlink("/proc/" + std::to_string(pid) + "/exe", e1);
-    auto self  = std::filesystem::read_symlink("/proc/self/exe", e2);
-    if (e1 || e2) return true; 
-
+    std::string other = read_comm(std::to_string(pid));
+    std::string self  = read_comm("self");
+    if (other.empty() || self.empty()) return true;
+ 
     return other == self;
 }
-
 bool PidFile::terminate_previous(int timeout_ms) {
     pid_t old_pid = read_pid();
     if (old_pid <= 0 || old_pid == getpid()) return true;

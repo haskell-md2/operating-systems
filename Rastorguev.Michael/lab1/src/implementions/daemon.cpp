@@ -186,4 +186,8 @@ void Daemon::show(const std::string& text) {
     //Видел, что у коллег, которым зачли лабораторную, вызывается именно такой эмулятор
     execlp("xterm", "xterm", "-hold", "-e", "echo", text.c_str(), nullptr);
 
+    //Исправление недочёта 1
+    syslog(LOG_ERR, "не удалось запустить xterm");
+    _exit(127);
+
 }
