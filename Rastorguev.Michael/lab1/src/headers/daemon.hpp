@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <set>
 #include <string>
+#include <map>
 
 #include "config.hpp"
 
@@ -37,4 +38,7 @@ class Daemon
     Config cfg_;
     std::set<std::string> fired_;
     bool running_ = true;
+
+    //К исправлению 3
+    std::map<std::string, time_t> last_fired_;
 };

@@ -112,8 +112,18 @@ void Daemon::prepare_events() {
 
     for (Event ev : cfg_.events) {
         if (ev.repeat) {
-            while (ev.when < now) ev.when = advance_time(ev.when, ev.repeat);
-        } else {
+
+            //Исправление недочёта 3
+
+            auto it = last_fired_.find(event_key(ev));
+
+            time_t floor = (it != last_fired_.end()) ? it->second + 1 : now - kGrace;
+            while (ev.when < floor) ev.when = advance_time(ev.when, ev.repeat);
+            while (ev.when < now - kGrace) ev.when = advance_time(ev.when, ev.repeat);
+
+        } 
+        else 
+        {
             if (fired_.count(event_key(ev))) continue;
             if (ev.when < now - kGrace) {
                 syslog(LOG_INFO, "Событие пропущено (время прошло): %s", ev.text.c_str());
@@ -140,6 +150,10 @@ void Daemon::tick() {
         show(it->text);
 
         if (it->repeat) {
+
+            //К исправлению 3
+            last_fired_[event_key(*it)] = it->when;
+
             while (it->when <= now) it->when = advance_time(it->when, it->repeat);
             it++;
         } else {
